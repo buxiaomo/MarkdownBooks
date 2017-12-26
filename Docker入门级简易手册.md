@@ -27,12 +27,18 @@
 
 ## CentOS7与Ubuntu下安装Docker
 
+​	这里应该有人会有一个疑问，为什么软件包名是docker-ce而不是docker-engine。docker版本在1.13以后有两个版本，分别是ce和ee版本，ce是开源社区办，ee是收费版，所以改了。
+
 ### CentOS7
 
 ```shell
 yum install -y yum-utils device-mapper-persistent-data lvm2 curl
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 yum -y install docker-ce
+
+# 安装指定版本
+DOCKER_VERSION=17.03.1.ce
+yum install docker-engine-selinux-${DOCKER_VERSION}* docker-engine-${DOCKER_VERSION}* -y
 ```
 
 ### Ubuntu
@@ -53,11 +59,15 @@ add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/u
 apt-get update
 
 apt-get install docker-ce -y
+
+# 安装指定版本
+DOCKER_VERSION=17.03.1*
+apt-get install docker-ce=${DOCKER_VERSION} -y
 ```
 
 ### 配置加速器
 
-​	不想申请加速器的朋友可以使用我的，也可以自己去申请阿里云或者Daocloud的加速器。
+​	不想申请加速器的朋友可以使用我的，也可以自己去申请阿里云或者Daocloud的加速器。docker版本不同配置文件路径存在差异，具体请查询官网，本篇针对17.*的版本。
 
 ```
 mkdir -p /etc/docker
