@@ -314,6 +314,8 @@ docker-compose version
 
 #### 单机docker-compose模版
 
+注意nginx、php、mysql、redis这几个容器的网络是怎么通讯的。
+
 ```yaml
 # 定义docker-compose版本，有些参数只有高版本才有，底版本没有
 version: '3.4'
