@@ -13,16 +13,14 @@
 
 3. docker-compo安装与常见命令讲解
 
-4. 集群环境下如何使用compose编排
-
-5. 根据项目如何使用Docker部署应用
+4. 根据项目如何使用Docker部署应用
 
    1. Swarm集群下发布基于LNMP的WordPress应用发布
    2. NodeJS应用发布
    3. Flask应用发布
    4. 基于Tomcat定制封装Jenkins镜像
 
-6. 每次代码写好了都要自己构建觉得麻烦怎么办？
+5. 每次代码写好了都要自己构建觉得麻烦怎么办？
 
 
 ## CentOS7与Ubuntu下安装Docker
