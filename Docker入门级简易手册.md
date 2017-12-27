@@ -8,19 +8,16 @@
 本篇主要讲解如下几个知识点：
 
 1. CentOS7与Ubuntu下安装Docker，配置加速器
-
 2. 常见Dockerfile命令讲解
-
 3. docker-compo安装与常见命令讲解
-
 4. 根据项目如何使用Docker部署应用
 
    1. Swarm集群下发布基于LNMP的WordPress应用发布
    2. NodeJS应用发布
    3. Flask应用发布
    4. 基于Tomcat定制封装Jenkins镜像
-
-5. 每次代码写好了都要自己构建觉得麻烦怎么办？
+5. 搭建私有仓库
+6. 每次代码写好了都要自己构建觉得麻烦怎么办？
 
 
 ## CentOS7与Ubuntu下安装Docker
@@ -898,6 +895,161 @@ ssserverweb:latest
 ### 基于Tomcat封装Jenkins镜像
 
 待补充
+
+
+
+## 搭建私有仓库
+
+### 无SSL私有仓库搭建
+
+准备docker-compose.yml文件，内容如下：
+
+```yaml
+version: '3'
+services:
+    registry:
+        image: registry:2.6.1
+        hostname: registry
+        ports:
+            - 80:5000/tcp
+        networks:
+            registry:
+                aliases:
+                    - registry
+        volumes:
+            - /var/lib/registry:/var/lib/registry:rw
+networks:
+    registry:
+        external: true
+```
+
+启动registry容器
+
+```shell
+root@registry:~# docker-compose -p my up -d
+```
+
+查看运行的私有仓库
+
+```shell
+root@registry:~# docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                          NAMES
+e1b3c0551d05        registry:2.6.1      "/entrypoint.sh /e..."   4 seconds ago       Up 3 seconds        0.0.0.0:80->5000/tcp                           my_registry_1
+```
+
+测试私有仓库，假设我的私有仓库的IP地址为：192.168.0.10
+
+```
+root@registry:~# curl http://192.168.0.10/v2/_catalog
+{"repositories":[]}
+```
+
+PUSH镜像
+
+```shell
+root@registry:~# docker tag nginx:latest 192.168.0.10/my/nginx:latest
+root@registry:~# docker push 192.168.0.10/my/nginx:latest
+The push refers to a repository [192.168.0.10/my/nginx]
+Get https://192.168.0.10/v2/: http: server gave HTTP response to HTTPS client
+```
+
+上面的问题是因为你没事使用HTTPS，编辑docker配置文件即可，注意文件格式是JSON
+
+```Json
+{
+	# ------------增加的部分--------------
+    "insecure-registries" : [
+        "192.168.0.10"
+    ],
+	# ----------------------------------
+    "storage-driver": "overlay2",
+    "registry-mirrors" : [
+        "https://i3jtbyvy.mirror.aliyuncs.com"
+    ],
+    "debug" : true,
+    "experimental" : true
+}
+```
+
+再次PUSH镜像
+
+```shell
+root@registry:~# docker push 192.168.0.10/my/nginx:latest
+The push refers to a repository [192.168.0.10/my/nginx]
+352a1fdf8adb: Pushed
+8dfa3865d14e: Pushed
+8a22ff826675: Pushing [==>                                                ]  4.309MB/103.6MB
+676c685b0f6f: Pushed
+e27a10675c56: Pushing [=>                                                 ]  2.696MB/100.1MB
+```
+
+### 有SSL私有仓库搭建
+
+准备证书
+
+```shell
+mkdir -p /home/registry
+cd /home/registry
+HOSTNAME=hub.xmitd.com
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout ${HOSTNAME}.key -x509 -days 365 -out ${HOSTNAME}.crt
+```
+
+准备docker-compose.yml文件
+
+```Yaml
+version: '3'
+services:
+    registry:
+        image: registry:2.6.1
+        hostname: registry
+        ports:
+            - 443:5000/tcp
+        networks:
+            registry:
+                aliases:
+                    - registry
+        volumes:
+            - /var/lib/registry:/var/lib/registry:rw
+            - /home/registry:/certs
+        environment:
+            - REGISTRY_HTTP_TLS_KEY=/certs/hub.xmitd.com.key
+            - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/hub.xmitd.com.crt
+networks:
+    registry:
+        external: true
+```
+启动registry容器
+
+```shell
+root@registry:~# docker-compose -p my up -d
+```
+
+查看运行的私有仓库
+
+```shell
+root@registry:~# docker ps
+CONTAINER ID        IMAGE                     COMMAND                  CREATED             STATUS              PORTS                                          NAMES
+a58bb9aa30c0        registry:2.6.1            "/entrypoint.sh /e..."   2 seconds ago       Up 2 seconds        0.0.0.0:443->5000/tcp                          my_registry_1
+```
+
+测试私有仓库，假设我的私有仓库的IP地址为：192.168.0.10
+
+```shell
+root@registry:~# curl -k https://192.168.0.10/v2/_catalog
+{"repositories":[]}
+```
+
+客户端配置
+
+```shell
+mkdir -p /etc/docker/certs.d/hub.xmitd.com
+cp /home/registry/hub.xmitd.com.crt /etc/docker/certs.d/hub.xmitd.com/
+systemctl restart docker
+```
+
+未完待补充
+
+
 
 
 
