@@ -8,16 +8,23 @@
 本篇主要讲解如下几个知识点：
 
 1. CentOS7与Ubuntu下安装Docker，配置加速器
+
 2. 常见Dockerfile命令讲解
+
 3. docker-compo安装与常见命令讲解
+
 4. 根据项目如何使用Docker部署应用
 
    1. Swarm集群下发布基于LNMP的WordPress应用发布
    2. NodeJS应用发布
    3. Flask应用发布
    4. 基于Tomcat定制封装Jenkins镜像
+
 5. 搭建私有仓库
+
 6. 每次代码写好了都要自己构建觉得麻烦怎么办？
+
+   ​
 
 
 ## CentOS7与Ubuntu下安装Docker
@@ -64,7 +71,7 @@ apt-get install docker-ce=${DOCKER_VERSION} -y
 
 ​	不想申请加速器的朋友可以使用我的，也可以自己去申请阿里云或者Daocloud的加速器。docker版本不同配置文件路径存在差异，具体请查询官网，本篇针对17.*的版本。
 
-```
+```shell
 mkdir -p /etc/docker
 
 cat > /etc/docker/daemon.json << EOF
@@ -93,7 +100,7 @@ systemctl restart docker
 
 指令语法：
 
-```
+```dockerfile
 FROM <image>
 FROM <image>:<tag>
 FROM <image>:<digest> 
@@ -110,11 +117,11 @@ FROM python:2.7
 
 ### `MAINTAINER`
 
-​	MAINTAINER命令一般是描述这个Dockerfile的作者信息，
+​	MAINTAINER命令一般是描述这个Dockerfile的作者信息
 
 指令语法：
 
-```
+```dockerfile
 MAINTAINER <name>
 
 eg:
@@ -127,7 +134,7 @@ MAINTAINER "MoMo" <95112082@qq.com>
 
 指令语法：
 
-```
+```dockerfile
 这里只写第一种格式，有兴趣的朋友可以去官网看看其他的方式
 RUN <command>
 
@@ -145,11 +152,11 @@ RUN apt-get update \
 
 指令语法：
 
-```
+```dockerfile
 CMD ["executable","param1","param2"]
 
 eg:
-CMD ["python","flask.py"]
+CMD ["python"]
 ```
 
 ### `EXPOSE`
@@ -158,7 +165,7 @@ CMD ["python","flask.py"]
 
 指令语法：
 
-```
+```dockerfile
 EXPOSE port
 
 eg:
@@ -172,7 +179,7 @@ EXPOSE 80 443
 
 指令语法：
 
-```
+```dockerfile
 ENV <key> <value>
 
 eg:
@@ -195,12 +202,12 @@ ENV JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 \
 
 指令语法：
 
-```
+```dockerfile
 ADD <src> <dest>
 
 eg:
 ADD nginx.conf /etc/nginx/nginx.conf
-ADD app.tar.gz /app/app.tar.gz
+ADD app.tar.gz /app/app
 ```
 
 ### `COPY`
@@ -209,9 +216,10 @@ ADD app.tar.gz /app/app.tar.gz
 
 指令语法：
 
-```
+```dockerfile
 COPY <src> <dest>
 
+eg:
 COPY app.tar.gz /app/
 ```
 
@@ -221,7 +229,7 @@ COPY app.tar.gz /app/
 
 指令语法：
 
-```
+```dockerfile
 ENTRYPOINT ["executable", "param1", "param2"]
 
 eg:
@@ -233,11 +241,11 @@ CMD ["-g","daemon off;"]
 
 ### `VOLUME`
 
-​	设置你的卷，在启动容器的时候Docker会在/var/lib/docker的下一级目录下创建一个卷，以保存你在容器中产生的数据。若没有申明则不会创建。
+​	设置你的卷，在启动容器的时候Docker会在/var/lib/docker/的下一级目录下创建一个卷，以保存你在容器中产生的数据。若没有申明则不会创建。
 
 指令语法：
 
-```
+```dockerfile
 VOLUME ["/path/to/directory"]
 
 eg:
@@ -251,7 +259,7 @@ VOLUME ["/data","/app/etc"]
 
 指令语法：
 
-```
+```dockerfile
 USER daemo
 
 eg:
@@ -264,7 +272,7 @@ USER nginx
 
 指令语法：
 
-```
+```dockerfile
 WORKDIR /path/to/workdir
 
 eg:
@@ -318,7 +326,7 @@ version: '3.4'
 services:
 	# 具体的服务名，其他的服务可以用过这个名字访问
     nginx:
-    	# 定义这个服务所使用的镜像以及进项版本，若不指定版本默认是latest，生产环境不建议使用latest
+    	# 定义这个服务所使用的镜像以及镜像版本，若不指定版本默认是latest，生产环境不建议使用latest
         image: nginx:1.13.6-alpine
         # 定义容器启动后的主机名，其他的服务可以用过这个名字访问
         hostname: nginx
@@ -413,7 +421,7 @@ networks:
 	# 网络名称，和上文中的wordpress一直，这里注意不是上文中出现的wordpress这个服务，而是是网络！！！
     wordpress:
     	# 是否是外部网络，这里可以理解为如果是外部网络那么网络的名字就叫wordpress，这样方便其他的服务接入到这个网络，如果不是，在你使用docker-compose up -d 命令的时候他会以你当前的文件夹的名字加上这里定义的网络名作为你这个compose的网络。比如我的这个compose文件在test下面，如果external为true，那么你需要手动创建这个网络然后去指定命令启动这个compose；如果为flase则网络的名字将会以test_wordpress出现在你的docker network ls中。具体可以自己去试一下就知道大概是什么意思了。
-        external: true
+        external: true        
 ```
 
 
@@ -587,7 +595,7 @@ services:
         ports:
             - 3000:80/tcp
         networks:
-            xbclub:
+            a1:
                 aliases:
                     - nginx
         volumes:
@@ -610,6 +618,9 @@ services:
             xbclub:
                 aliases:
                     - wordpress
+            mysql:
+                aliases:
+                    - nginx
         environment:
             - WORDPRESS_DB_HOST=mysql
             - WORDPRESS_DB_USER=root
@@ -633,7 +644,7 @@ services:
         image: mysql:5.7.20
         hostname: mysql
         networks:
-            xbclub:
+            mysql:
                 aliases:
                     - mysql
         environment:
@@ -1048,8 +1059,6 @@ systemctl restart docker
 ```
 
 未完待补充
-
-
 
 
 
