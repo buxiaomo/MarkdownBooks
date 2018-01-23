@@ -1,5 +1,5 @@
 # Docker入门级简易手册
-本篇经作为新手入门使用，大神们可以指导小弟修正，不喜勿喷，谢谢
+本篇仅作为新手入门使用，大神们可以指导小弟修正，不喜勿喷，谢谢
 
 在线版：https://github.com/buxiaomo/MarkdownBooks
 
@@ -911,6 +911,8 @@ ssserverweb:latest
 
 ## 搭建私有仓库
 
+注意容器内镜像存储目录(`/var/lib/registry`)！！！
+
 ### 无SSL私有仓库搭建
 
 准备docker-compose.yml文件，内容如下：
@@ -1058,7 +1060,58 @@ cp /home/registry/hub.xmitd.com.crt /etc/docker/certs.d/hub.xmitd.com/
 systemctl restart docker
 ```
 
-未完待补充
+### 使用Reids缓存并使用阿里云OSS
+
+修改 `registry` 环境变量中的值为阿里云OSS相关参数即可
+
+```yaml
+version: '2'
+services:
+    registry:
+        image: registry:2.6.1
+        hostname: registry
+        ports:
+            - 80:5000/tcp
+        networks:
+            registry:
+                aliases:
+                    - registry
+        environment:
+            - REGISTRY_STORAGE=oss
+            - REGISTRY_STORAGE_OSS_ACCESSKEYID=<accesskey_id>
+            - REGISTRY_STORAGE_OSS_ACCESSKEYSECRET=<accesskey_secret>
+            - REGISTRY_STORAGE_OSS_REGION=<region_id>
+            - REGISTRY_STORAGE_OSS_BUCKET=<bucket_name>
+            - REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR=redis
+            - REGISTRY_REDIS_ADDR=redis:6379
+    redis:
+        image: redis:4.0.6
+        hostname: redis
+        networks:
+            registry:
+                aliases:
+                    - redis
+        volumes:
+            - /redis/registry:/data:rw
+        deploy:
+            mode: replicated
+            replicas: 1
+            placement:
+                constraints:
+                    - node.hostname == Docker-Swarm-Redis
+        logging:
+            driver: json-file
+            options:
+                max-file: '3'
+                max-size: 100m
+networks:
+    registry:
+        external: true
+```
+
+### 带认证功能的私有仓库
+
+待补充
 
 
 
