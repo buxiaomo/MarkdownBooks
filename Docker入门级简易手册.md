@@ -907,13 +907,21 @@ ssserverweb:latest
 
 待补充
 
+### Docker Image命名简介
 
+按照 `daocloud.io/daocloud/mysql:5.7` 为例
 
-## 搭建私有仓库
+仓库地址：daocloud.io(不写默认是 `index.docker.io` )
 
-注意容器内镜像存储目录(`/var/lib/registry`)！！！
+命名空间：daocloud
 
-### 无SSL私有仓库搭建
+镜像名：mysql
+
+版本：5.7
+
+###搭建私有仓库
+
+#### 无SSL私有仓库搭建
 
 准备docker-compose.yml文件，内容如下：
 
@@ -996,7 +1004,7 @@ The push refers to a repository [192.168.0.10/my/nginx]
 e27a10675c56: Pushing [=>                                                 ]  2.696MB/100.1MB
 ```
 
-### 有SSL私有仓库搭建
+#### 有SSL私有仓库搭建
 
 准备证书
 
@@ -1060,7 +1068,7 @@ cp /home/registry/hub.xmitd.com.crt /etc/docker/certs.d/hub.xmitd.com/
 systemctl restart docker
 ```
 
-### 使用Reids缓存并使用阿里云OSS
+#### 使用Reids缓存并使用阿里云OSS
 
 修改 `registry` 环境变量中的值为阿里云OSS相关参数即可
 
@@ -1109,7 +1117,7 @@ networks:
         external: true
 ```
 
-### 带认证功能的私有仓库
+#### 带认证功能的私有仓库
 
 待补充
 
@@ -1126,3 +1134,5 @@ networks:
 
 
 若有错误欢迎指出修正：95112082@qq.com
+
+
