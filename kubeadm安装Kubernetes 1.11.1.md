@@ -26,9 +26,9 @@ After=network.target
 
 [Service]
 Type=simple
-Environment="SS_ADDR=hk01.sourmilk.cc"
-Environment="SS_PROT=30000"
-Environment="SS_PASS=123456"
+Environment="SS_ADDR=xxx.xxx.xxx"
+Environment="SS_PROT=xxx"
+Environment="SS_PASS=xxx"
 Environment="SS_MODE=aes-256-cfb"
 ExecStart=/usr/bin/sslocal -s \${SS_ADDR} -p \${SS_PROT} -k \${SS_PASS} -m \${SS_MODE} -b 127.0.0.1
 ExecStop=/bin/kill -SIGTERM
