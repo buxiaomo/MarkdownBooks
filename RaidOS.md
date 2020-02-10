@@ -346,6 +346,28 @@ root@RaidOS:~# systemctl restart nfs-server.service
 root@RaidOS:~# systemctl enable nfs-server.service
 ```
 
+## 安装配置Docker
+
+```
+root@RaidOS:~# curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+root@RaidOS:~# cat /etc/docker/daemon.json
+{
+  "data-root": "/mnt/user/docker",
+  "registry-mirrors": [
+    "https://i3jtbyvy.mirror.aliyuncs.com"
+  ],
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "500m",
+    "max-file": "2"
+  }
+}
+```
+
 ## 测试
 
 ### IO测试
