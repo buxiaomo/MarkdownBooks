@@ -93,11 +93,57 @@ apt-get install -y docker-ce=$(apt-cache madison docker-ce | awk "/${VERSION}/{p
 ```
 cat > /etc/docker/daemon.json << EOF
 {
-    "registry-mirrors" : [
+    "builder": {
+        "gc": {
+            "defaultKeepStorage": "20GB",
+            "enabled": true
+        }
+    },
+    "data-root": "/var/lib/docker",
+    "debug": false,
+    "default-ulimits": {
+        "core": {
+            "Hard": -1,
+            "Name": "core",
+            "Soft": -1
+        },
+        "nofile": {
+            "Hard": 65535,
+            "Name": "nofile",
+            "Soft": 65535
+        },
+        "nproc": {
+            "Hard": 65535,
+            "Name": "nproc",
+            "Soft": 65535
+        }
+    },
+    "exec-opts": [
+        "native.cgroupdriver=systemd"
+    ],
+    "experimental": false,
+    "features": {
+        "buildkit": true
+    },
+    "icc": false,
+    "insecure-registries": [
+        "0.0.0.0/0"
+    ],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-file": "5",
+        "max-size": "100m"
+    },
+    "max-concurrent-downloads": 20,
+    "max-concurrent-uploads": 10,
+    "registry-mirrors": [
         "https://i3jtbyvy.mirror.aliyuncs.com"
     ],
-    "debug" : true,
-    "experimental" : true
+    "storage-driver": "overlay2",
+    "storage-opts": [
+        "overlay2.override_kernel_check=true"
+    ],
+    "userland-proxy": false
 }
 EOF
 ```
